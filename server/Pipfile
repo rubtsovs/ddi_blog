@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+celery = "*"
+redis = "*"
+flower = "*"
+psycopg2-binary = "*"
+pillow = "*"
+django-crispy-forms = "*"
+django-widget-tweaks = "*"
+django-humanize = "*"
+django-extensions = "*"
+ipython = "*"
+markdown = "*"
+django-simplemde = "*"
+
+[requires]
+python_version = "3.8"

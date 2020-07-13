@@ -1,0 +1,72 @@
+version: "3"
+
+services:
+  server:
+    build: ./server/
+    container_name: blog-server
+    working_dir: /var/www/server
+    ports:
+      - "$SERVER_PORT:$SERVER_PORT"
+    volumes:
+      - ./server/:/var/www/server
+    command: python manage.py runserver 0.0.0.0:$SERVER_PORT
+    stdin_open: true
+    environment:
+      - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+      - PGHOST=$DATABASE_HOST
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - celery
+
+  database:
+    container_name: blog-database
+    image: postgres:latest
+    volumes:
+      - ./initial.sql:/docker-entrypoint-initdb.d/initial.sql
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  celery:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    container_name: blog-celery
+    working_dir: /var/www/server
+    volumes:
+      - ./server/:/var/www/server
+    command: /bin/bash -c "celery -A server worker -B --loglevel=info" 
+    depends_on:
+      - database
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+      - PGHOST=$DATABASE_HOST
+
+  redis:
+    image: redis:latest
+    container_name: blog-redis
+    ports:
+      - "$REDIS_PORT:$REDIS_PORT"
+    privileged: true
+    sysctls:
+        net.core.somaxconn: "511"
+
+  monitor:
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+    container_name: blog-monitor
+    working_dir: /var/www/server
+    volumes:
+      - ./server/:/var/www/server
+    command: /bin/bash -c "flower -A server --port=$FLOWER_PORT"
+    env_file:
+      - .env
+    depends_on:
+      - celery
+    ports:
+      - "$FLOWER_PORT:$FLOWER_PORT"

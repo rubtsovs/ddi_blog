@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block javascript %}
+<script src="{% static 'js/app.js' %}" type="text/javascript"></script>
+{% endblock %}
+{% block content %}
+<!-- Post Content Column -->
+<div class="col-lg-8">
+   <!-- Title -->
+   <h1 class="mt-4">{{article.subject}}</h1>
+   <!-- Author -->
+   <p class="lead">
+      by
+      <a href="#">{% if article.user.first_name %}{{article.user.first_name}}{% endif %}</a>
+   </p>
+   <hr>
+   <!-- Date/Time -->
+   <p>{{article.created_at}}</p>
+   <hr>
+   <!-- Preview Image -->
+   {% if article.image %}
+   <img class="img-fluid rounded" src="{{ article.image.url }}" height="300" width="900"  alt="Card image cap">
+   {% else %}
+   <img class="img-fluid rounded" src="http://placehold.it/750x300" height="300" width="900" alt="Card image cap">
+   {% endif %}
+   <hr>
+   <!-- Post Content -->
+   <p class="lead">{{article.get_message_as_markdown}}</p>
+   <hr>
+   <!-- Comments Form -->
+   <div class="card my-4">
+      <h5 class="card-header">Leave a Comment:</h5>
+      <div class="card-body">
+         <form method="post" id="comment-form" role="form" enctype="multipart/form-data" novalidate>
+            <div class="form-group">
+               {% csrf_token %}
+               <input type="hidden" name="parent" id="contactparent" value="">
+               <textarea  id="comment" name="comment" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+         </form>
+      </div>
+   </div>
+   <div class="infinite-container">
+      {% for comment in comments %}
+      <div class="media mb-4 infinite-item">
+         {% if comment.user.avatar %}
+         <img class="d-flex mr-3 rounded-circle" src="{{ comment.user.avatar.url }}" height="50" width="50"  alt="Card image cap">
+         {% else %}
+         <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">         
+         {% endif %}
+         <div class="media-body">
+            <h5 class="mt-0">{{comment.user.first_name}}</h5>
+            <blockquote class="blockquote">
+               <p>{{comment.comment}}</p>
+               <footer class="blockquote-footer"><cite title="Source Title">{{comment.created_at}}</cite></footer>
+            </blockquote>
+            <a style="cursor: pointer;" class="btn btn-light" href="#comment-form" onclick="addReview('{{ comment.user.first_name }}', '{{ comment.id }}')" id="reply">Reply</a>
+            <hr/>
+            {% for reply in comment.replies.all %}
+            <div class="media">
+               {% if reply.user.avatar %}
+               <img class="d-flex mr-3 rounded-circle" src="{{ reply.user.avatar.url }}" height="50" width="50"  alt="Card image cap">
+               {% else %}
+               <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" height="50" width="50" alt="Card image cap">
+               {% endif %}  
+               <div class="media-body">
+                  <param style="display: none;"  value="{{ replay.id }}">
+                  <param/>
+                  <h5 class="mt-0">{{reply.user.first_name}}</h5>
+                  <blockquote class="blockquote">
+                     <p>{{reply.comment}}</p>
+                     <footer class="blockquote-footer"><cite title="Source Title">{{reply.created_at}}</cite></footer>
+                  </blockquote>
+                  <hr/>
+               </div>
+            </div>
+            {% endfor %}
+         </div>
+      </div>
+      {% endfor %}
+      <div class="loading text-center" style="display: none;">
+         Loading...
+      </div>
+   </div>
+</div>
+{% if comments.has_next %}
+<a class="infinite-more-link" href="?page={{ comments.next_page_number }}"></a>
+{% endif %}
+{% endblock %}

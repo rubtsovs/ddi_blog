@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Page Content -->
+<div class="row">
+   <!-- Post Content Column -->
+   <div class="col-lg-2"></div>
+   <div class="col-lg-8">
+      <!-- Blog Post -->
+      {% for article in articles %}    
+      <div class="card mb-4 mt-4">
+          {% if article.image %}
+            <img class="card-img-top" src="{{ article.image.url }}" height="300" width="700"  alt="Card image cap">
+          {% else %}
+          
+            <img class="card-img-top" src="http://placehold.it/750x300" height="300" width="700" alt="Card image cap">
+         {% endif %}
+         <div class="card-body">
+            <h2 class="card-title">{{article.subject}}</h2>
+            <p class="card-text">{{article.get_message_as_markdown|truncatechars:200}}</p>
+            <a href="{% url 'article' article.pk %}" class="btn btn-primary">Read More &rarr;</a>
+         </div>
+         <div class="card-footer text-muted">
+            {{article.created_at}}
+            <a href="#">{% if article.user.first_name %}{{article.user.first_name}}{% endif %}</a>
+         </div>
+      </div>
+      {% endfor %}
+      <div class="row">
+          <div class="container">
+                {% include 'includes/pagination.html' %}
+          </div>
+      </div>
+   </div>
+</div>
+
+{% endblock %}
